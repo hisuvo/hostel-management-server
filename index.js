@@ -25,10 +25,36 @@ async function run() {
 
     const database = client.db("hostel-management");
     const mealCollection = database.collection("meals");
+    const userCollection = database.collection("users");
 
     //Collect meals api
     app.get("/meals", async (req, res) => {
       const result = await mealCollection.find().toArray();
+      res.send(result);
+    });
+
+    // users api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+
+      const isExistUser = await userCollection.findOne(query);
+
+      if (isExistUser) {
+        return res.send({
+          message: "User already have an account",
+          insertedId: null,
+        });
+      }
+
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // users api
+    app.get("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.find(user).toArray();
       res.send(result);
     });
 
