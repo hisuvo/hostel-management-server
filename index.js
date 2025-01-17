@@ -26,6 +26,7 @@ async function run() {
     const database = client.db("hostel-management");
     const mealCollection = database.collection("meals");
     const userCollection = database.collection("users");
+    const memberShipColletion = database.collection("plans");
 
     //Collect meals api
     app.get("/meals", async (req, res) => {
@@ -55,6 +56,13 @@ async function run() {
     app.get("/users", async (req, res) => {
       const user = req.body;
       const result = await userCollection.find(user).toArray();
+      res.send(result);
+    });
+
+    // mamber ship plan api
+    app.get("/plans", async (req, res) => {
+      const plan = req.body;
+      const result = await memberShipColletion.find(plan).toArray();
       res.send(result);
     });
 
