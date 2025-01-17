@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
 const cors = require("cors");
@@ -54,15 +54,26 @@ async function run() {
 
     // users api
     app.get("/users", async (req, res) => {
-      const user = req.body;
-      const result = await userCollection.find(user).toArray();
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
 
     // mamber ship plan api
     app.get("/plans", async (req, res) => {
-      const plan = req.body;
-      const result = await memberShipColletion.find(plan).toArray();
+      const result = await memberShipColletion.find().toArray();
+      res.send(result);
+    });
+
+    // make admin api
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
 
