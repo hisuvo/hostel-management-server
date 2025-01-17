@@ -54,7 +54,29 @@ async function run() {
 
     // users api
     app.get("/users", async (req, res) => {
-      const result = await userCollection.find().toArray();
+      const userName = req.query.name;
+      const email = req.query.email;
+      let query = {};
+
+      if (userName) {
+        query = {
+          $or: [
+            {
+              name: {
+                $regex: userName,
+                $options: "i",
+              },
+            },
+            {
+              email: {
+                $regex: email,
+                $options: "i",
+              },
+            },
+          ],
+        };
+      }
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
