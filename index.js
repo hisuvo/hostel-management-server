@@ -114,6 +114,14 @@ async function run() {
       res.send(result);
     });
 
+    // general user api
+    app.get("/general/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await userCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     // users search api
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const userName = req.query.name;
