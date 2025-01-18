@@ -84,6 +84,16 @@ async function run() {
       res.send(result);
     });
 
+    // spacific addmin meal count related api
+    app.get("/destributer-add-meals/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = {
+        distributorEmail: email,
+      };
+      const result = await mealCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     // ================= User API =======================
 
     // users api
