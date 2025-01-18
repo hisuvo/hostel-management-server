@@ -77,6 +77,13 @@ async function run() {
       res.send(result);
     });
 
+    // store meal in database related api
+    app.post("/meals", verifyToken, verifyAdmin, async (req, res) => {
+      const meal = req.body;
+      const result = await mealCollection.insertOne(meal);
+      res.send(result);
+    });
+
     // ================= User API =======================
 
     // users api
@@ -127,7 +134,7 @@ async function run() {
     });
 
     // user badge relate api
-    app.patch("/users/:email", async (req, res) => {
+    app.patch("/users/:email", verifyToken, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const { badge } = req.body;
 
@@ -145,7 +152,7 @@ async function run() {
 
     // =============== Admin related api==================
 
-    // users admin api
+    // check admin api
     app.get(
       "/users/admin/:email",
       verifyToken,
