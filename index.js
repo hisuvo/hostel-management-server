@@ -3,6 +3,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECURET_KEY);
 const cors = require("cors");
 const port = process.env.PORT || 7000;
 
@@ -33,7 +34,7 @@ async function run() {
     // jwt token
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, privateKey, {
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "2h",
       });
       res.send({ token });
@@ -46,7 +47,7 @@ async function run() {
       }
       const token = req.headers.authorization.split(" ")[1];
 
-      jwt.verify(token, privateKey, (error, decoded) => {
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) {
           return res.status(401).send({ message: "unauthorized access" });
         }
@@ -56,11 +57,26 @@ async function run() {
       });
     };
 
+    // use verify admin after veryfiToken
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const isAdmin = await userCollection.findOne(query);
+      if (!isAdmin) {
+        res.status(403).send({ message: "forbidden token" });
+      }
+      next();
+    };
+
+    // ================= Meal related API ===============
+
     //Collect meals api
     app.get("/meals", async (req, res) => {
       const result = await mealCollection.find().toArray();
       res.send(result);
     });
+
+    // ================= User API =======================
 
     // users api
     app.post("/users", async (req, res) => {
@@ -80,8 +96,8 @@ async function run() {
       res.send(result);
     });
 
-    // users api
-    app.get("/users", verifyToken, async (req, res) => {
+    // users search api
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const userName = req.query.name;
       const email = req.query.email;
 
@@ -109,28 +125,29 @@ async function run() {
       res.send(result);
     });
 
+    // =============== Admin related api==================
+
     // users admin api
-    app.get("/users/admin/:email", verifyToken, async (req, res) => {
-      const email = req.params.email;
+    app.get(
+      "/users/admin/:email",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const email = req.params.email;
 
-      if (email !== req.decoded?.email) {
-        return res.status(403).send({ message: "forbidden access" });
+        if (email !== req.decoded?.email) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
+
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        let admin = false;
+        if (user) {
+          admin = user?.role === "admin";
+        }
+        res.send({ admin });
       }
-
-      const query = { email: email };
-      const user = await userCollection.findOne(query);
-      let admin = false;
-      if (user) {
-        admin = user?.role === "admin";
-      }
-      res.send({ admin });
-    });
-
-    // mamber ship plan api
-    app.get("/plans", async (req, res) => {
-      const result = await memberShipColletion.find().toArray();
-      res.send(result);
-    });
+    );
 
     // make admin api
     app.patch("/users/admin/:id", async (req, res) => {
@@ -145,6 +162,38 @@ async function run() {
       res.send(result);
     });
 
+    // ==============Membership plans related api ================
+    // mamber ship plan api
+    app.get("/plans", async (req, res) => {
+      const result = await memberShipColletion.find().toArray();
+      res.send(result);
+    });
+
+    // specifice plan name api
+    app.get("/plans/:plan_name", async (req, res) => {
+      const planName = req.params.plan_name;
+      const filter = { name: planName };
+      const result = await memberShipColletion.find(filter).toArray();
+      res.send(result);
+    });
+
+    // =============payment related Api=====================
+
+    // payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 1000); // amount conver in poisa
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    // --------------------end-----------------
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
@@ -157,7 +206,7 @@ run().catch(console.dir);
 
 // test get api
 app.get("/", async (req, res) => {
-  res.send("Hostel Management  is commig.....");
+  res.send("Hostel Management  is runing.....");
 });
 
 app.listen(port, () => {
