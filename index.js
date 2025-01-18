@@ -126,6 +126,23 @@ async function run() {
       res.send(result);
     });
 
+    // user badge relate api
+    app.patch("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const { badge } = req.body;
+
+      const query = { email: email };
+
+      const updatedDoc = {
+        $set: {
+          badge: badge,
+        },
+      };
+
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
     // =============== Admin related api==================
 
     // users admin api
@@ -197,7 +214,6 @@ async function run() {
     app.post("/payments", async (req, res) => {
       const data = req.body;
       const result = await paymentCollection.insertOne(data);
-      console.log(result);
       res.send(result);
     });
 
