@@ -30,6 +30,7 @@ async function run() {
     const mealCollection = database.collection("meals");
     const userCollection = database.collection("users");
     const memberShipColletion = database.collection("plans");
+    const paymentCollection = database.collection("payments");
 
     // jwt token
     app.post("/jwt", async (req, res) => {
@@ -191,6 +192,13 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    app.post("/payments", async (req, res) => {
+      const data = req.body;
+      const result = await paymentCollection.insertOne(data);
+      console.log(result);
+      res.send(result);
     });
 
     // --------------------end-----------------
