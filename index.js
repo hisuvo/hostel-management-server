@@ -31,6 +31,7 @@ async function run() {
     const userCollection = database.collection("users");
     const memberShipColletion = database.collection("plans");
     const paymentCollection = database.collection("payments");
+    const requestCollection = database.collection("request");
 
     // jwt token
     app.post("/jwt", async (req, res) => {
@@ -91,6 +92,13 @@ async function run() {
         distributorEmail: email,
       };
       const result = await mealCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // Meal request relative api
+    app.post("/meal/request", async (req, res) => {
+      const request = req.body;
+      const result = await requestCollection.insertOne(request);
       res.send(result);
     });
 
