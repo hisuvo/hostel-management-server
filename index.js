@@ -95,10 +95,28 @@ async function run() {
       res.send(result);
     });
 
+    // ================ request API ===================
+
+    // user meal requested api
+    app.get("/meal/request/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { requestEmail: email };
+      const result = await requestCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Meal request relative api
     app.post("/meal/request", async (req, res) => {
       const request = req.body;
       const result = await requestCollection.insertOne(request);
+      res.send(result);
+    });
+
+    // Delete request Unlike meal api
+    app.delete(`/delete/request-mela/:id`, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await requestCollection.deleteOne(query);
       res.send(result);
     });
 
