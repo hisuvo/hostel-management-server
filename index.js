@@ -266,6 +266,14 @@ async function run() {
 
     // =============payment related Api=====================
 
+    // payment info serve api
+    app.get("/payment-hostory/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // payment intent
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
