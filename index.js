@@ -123,7 +123,7 @@ async function run() {
     });
 
     // users search api
-    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/users", async (req, res) => {
       const userName = req.query.name;
       const email = req.query.email;
 
