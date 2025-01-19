@@ -1,5 +1,10 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  ReturnDocument,
+} = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -82,6 +87,19 @@ async function run() {
     app.post("/meals", verifyToken, verifyAdmin, async (req, res) => {
       const meal = req.body;
       const result = await mealCollection.insertOne(meal);
+      res.send(result);
+    });
+
+    // meal like relate api
+    app.patch("/meal-like/:id", async (req, res) => {
+      const id = req.params;
+      const query = { _id: new ObjectId(id) };
+      const totalLike = {
+        $inc: {
+          likes: 1,
+        },
+      };
+      const result = await mealCollection.updateOne(query, totalLike);
       res.send(result);
     });
 
