@@ -1,10 +1,5 @@
 const express = require("express");
-const {
-  MongoClient,
-  ServerApiVersion,
-  ObjectId,
-  ReturnDocument,
-} = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -107,7 +102,35 @@ async function run() {
     // meal review related api
     app.post("/reviews", async (req, res) => {
       const review = req.body;
-      const result = await requestCollection.insertOne(review);
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
+
+    // meal review collect form client related  api
+    app.get("/reviews", async (req, res) => {
+      const mealWithReview = await reviewCollection.aggregate().toArray();
+      res.send(mealWithReview);
+    });
+
+    // meal review count update api
+    app.patch("/review_count/:id", async (req, res) => {
+      const id = req.params;
+      const query = { _id: new ObjectId(id) };
+      const totalReview = {
+        $inc: {
+          reviews_count: 1,
+        },
+      };
+      const result = await mealCollection.updateOne(query, totalReview);
+
+      res.send(result);
+    });
+
+    // if want to delete review then use this api
+    app.delete("/review-delete/:id", async (req, res) => {
+      const id = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await reviewCollection.deleteOne(query);
       res.send(result);
     });
 
