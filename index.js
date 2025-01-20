@@ -108,8 +108,8 @@ async function run() {
 
     // meal review collect form client related  api
     app.get("/reviews", async (req, res) => {
-      const mealWithReview = await reviewCollection.aggregate().toArray();
-      res.send(mealWithReview);
+      const result = await reviewCollection.aggregate().toArray();
+      res.send(result);
     });
 
     // meal review_count update api
@@ -126,13 +126,28 @@ async function run() {
       res.send(result);
     });
 
-    // if want to delete review then use this api
+    // if want to delete review then use this api of user
     app.delete("/review-delete/:id", async (req, res) => {
       const id = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await reviewCollection.deleteOne(query);
       res.send(result);
     });
+
+    // if want to delete review then use this api of admin
+    app.delete(
+      "/admin-delete-review/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params;
+        console.log("admin deleted review id -->", id);
+
+        const query = { _id: new ObjectId(id) };
+        const result = await reviewCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
 
     // spacific addmin meal count related api
     app.get("/destributer-add-meals/:email", async (req, res) => {
