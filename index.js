@@ -112,7 +112,7 @@ async function run() {
       res.send(mealWithReview);
     });
 
-    // meal review count update api
+    // meal review_count update api
     app.patch("/review_count/:id", async (req, res) => {
       const id = req.params;
       const query = { _id: new ObjectId(id) };
@@ -141,6 +141,18 @@ async function run() {
         distributorEmail: email,
       };
       const result = await mealCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // meal review update api
+    app.patch("/update-review/:id", async (req, res) => {
+      const id = req.params.id;
+      const { review } = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: { review: review },
+      };
+      const result = await reviewCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
 
