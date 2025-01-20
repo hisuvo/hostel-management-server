@@ -37,6 +37,7 @@ async function run() {
     const memberShipColletion = database.collection("plans");
     const paymentCollection = database.collection("payments");
     const requestCollection = database.collection("request");
+    const reviewCollection = database.collection("reviews");
 
     // jwt token
     app.post("/jwt", async (req, res) => {
@@ -100,6 +101,13 @@ async function run() {
         },
       };
       const result = await mealCollection.updateOne(query, totalLike);
+      res.send(result);
+    });
+
+    // meal review related api
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await requestCollection.insertOne(review);
       res.send(result);
     });
 
