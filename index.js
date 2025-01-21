@@ -173,7 +173,13 @@ async function run() {
 
     // ================ request API ===================
 
-    // user meal requested api
+    // user all requested  api
+    app.get("/meal/request", verifyToken, async (req, res) => {
+      const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+
+    // user email meal requested api
     app.get("/meal/request/:email", async (req, res) => {
       const email = req.params.email;
       const query = { requestEmail: email };
@@ -193,6 +199,53 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await requestCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // request mile serve api form admin
+    app.patch(
+      "/request-served/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            status: status,
+          },
+        };
+
+        const result = await requestCollection.updateOne(query, updatedDoc);
+        res.send(result);
+      }
+    );
+
+    // request meal user name and email search api
+    app.get(`/requester/search`, async (req, res) => {
+      const query = req.query.value || "";
+
+      console.log("---", query);
+
+      let filter = {
+        $or: [
+          {
+            userName: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+          {
+            requestEmail: {
+              $regex: query,
+              $options: "i",
+            },
+          },
+        ],
+      };
+
+      const result = await requestCollection.find(filter).toArray();
       res.send(result);
     });
 
