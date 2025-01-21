@@ -226,8 +226,6 @@ async function run() {
     app.get(`/requester/search`, async (req, res) => {
       const query = req.query.value || "";
 
-      console.log("---", query);
-
       let filter = {
         $or: [
           {
