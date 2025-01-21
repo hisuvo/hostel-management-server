@@ -79,12 +79,39 @@ async function run() {
       res.send(result);
     });
 
+    // meal sort by like and review_count
+    app.get("/meals/sortOrder", async (req, res) => {
+      const { sortBy = "likes", order = "desc" } = req.query;
+      console.log(req.query);
+      const sortOrder = order === "asc" ? 1 : -1;
+      console.log("sort order is --->", sortOrder);
+
+      const result = await mealCollection
+        .find()
+        .sort({ [sortBy]: sortOrder })
+        .toArray();
+      res.send(result);
+    });
+
     // store meal in database related api
     app.post("/meals", verifyToken, verifyAdmin, async (req, res) => {
       const meal = req.body;
       const result = await mealCollection.insertOne(meal);
       res.send(result);
     });
+
+    // admin can delete meal related api
+    app.delete(
+      "/delete-meal/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await mealCollection.deleteOne(filter);
+        res.send(result);
+      }
+    );
 
     // meal like relate api
     app.patch("/meal-like/:id", async (req, res) => {
