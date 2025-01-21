@@ -75,17 +75,40 @@ async function run() {
 
     //Collect meals api
     app.get("/meals", async (req, res) => {
-      const result = await mealCollection.find().toArray();
+      const { search, category, minPrice, maxPrice } = req.query;
+
+      // filter condation here
+      let filderCondition = {};
+
+      if (search) {
+        filderCondition.title = {
+          $regex: search,
+          $options: "i",
+        };
+      }
+
+      if (category) {
+        filderCondition.category = category;
+      }
+
+      if (minPrice || maxPrice) {
+        filderCondition.price = {};
+        if (minPrice) {
+          filderCondition.price.$gte = parseInt(minPrice);
+        }
+        if (maxPrice) {
+          filderCondition.price.$lte = parseInt(maxPrice);
+        }
+      }
+
+      const result = await mealCollection.find(filderCondition).toArray();
       res.send(result);
     });
 
     // meal sort by like and review_count
-    app.get("/meals/sortOrder", async (req, res) => {
+    app.get("/meals/sortOrder", verifyToken, verifyAdmin, async (req, res) => {
       const { sortBy = "likes", order = "desc" } = req.query;
-      console.log(req.query);
       const sortOrder = order === "asc" ? 1 : -1;
-      console.log("sort order is --->", sortOrder);
-
       const result = await mealCollection
         .find()
         .sort({ [sortBy]: sortOrder })
