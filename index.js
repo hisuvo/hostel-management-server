@@ -73,12 +73,6 @@ async function run() {
 
     // ================= Meal related API ===============
 
-    // upcomming meals ::TODO
-    // app.get("/upcomming-meals", async (req, res) => {
-    //   const meals = await mealCollection.find().toArray();
-    //   const totalLike = meals.filter((meal) => meal.likes);
-    // });
-
     //Collect meals api
     app.get("/meals", async (req, res) => {
       const { search, category, minPrice, maxPrice } = req.query;
@@ -152,6 +146,19 @@ async function run() {
         },
       };
       const result = await mealCollection.updateOne(query, totalLike);
+      res.send(result);
+    });
+
+    // meal publish
+    app.patch("/meal-publish/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          postTime: new Date(),
+        },
+      };
+      const result = await mealCollection.updateOne(query, update);
       res.send(result);
     });
 
