@@ -73,6 +73,19 @@ async function run() {
 
     // ================= Meal related API ===============
 
+    // upcomming meals ::TODO
+    app.get("/upcomming-meals", async (req, res) => {
+      const meals = await mealCollection.find().toArray();
+      const totalLike = meals.filter((meal) => meal.likes);
+    });
+
+    app.get("/meal/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const meal = await mealCollection.findOne(query);
+      res.send(meal);
+    });
+
     //Collect meals api
     app.get("/meals", async (req, res) => {
       const { search, category, minPrice, maxPrice } = req.query;
