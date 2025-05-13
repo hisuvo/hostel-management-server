@@ -485,6 +485,31 @@ async function run() {
       res.send(result);
     });
 
+    // stats or analytics
+    app.get("/admin-stats", async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const meals = await mealCollection.estimatedDocumentCount();
+      const requests = await requestCollection.estimatedDocumentCount();
+      const reviews = await reviewCollection.estimatedDocumentCount();
+
+      // revenue
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$amount",
+              },
+            },
+          },
+        ])
+        .toArray();
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+      res.send({ users, meals, requests, reviews, revenue });
+    });
+
     // --------------------end-----------------
     // await client.db("admin").command({ ping: 1 });
     // console.log(
